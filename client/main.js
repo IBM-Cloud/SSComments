@@ -1,6 +1,6 @@
 var React = require('react');
 var requester = require('./requester');
-var Comment = require('./Comment');
+var Comment = require('./components/Comment');
 
 var SSComments = React.createClass({
   getInitialState: function () {
