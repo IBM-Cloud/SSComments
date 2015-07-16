@@ -1,0 +1,44 @@
+@primary-color1: #6DC6F3;
+@background-color1: #f3f3f3;
+@secondary-text-color: #c1c1c1;
+
+* {
+  outline: none;
+  box-sizing: border-box;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body, .ss-comments {
+  height: 100%;
+  width: 100%;
+}
+
+body, button, input {
+  font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-size: 1em;
+}
+h1, h2, h3, h4, h5, h6 {margin: 0;}
+h1 { font-size: 2.25em; }
+h2 { font-size: 1.75em; }
+h3 { font-size: 1.5em; }
+h4 { font-size: 1.25em; }
+h5 { font-size: 1em; }
+h6 { font-size: 1em; color: @secondary-text-color; }
+
+.ss-comments {
+  padding: 50px;
+
+  .comment {
+    margin: 15px 0px;
+    .comment-body {
+      font-style: italic;
+    }
+    .comment-author {
+
+    }
+  }
+}

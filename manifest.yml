@@ -1,0 +1,12 @@
+applications:
+- services:
+  - SSComments-cloudantNoSQLDB
+  - SSComments-MonitoringAndAnalytics
+  disk_quota: 1024M
+  host: SSComments
+  name: SSComments
+  command: node app.js
+  path: .
+  domain: mybluemix.net
+  instances: 1
+  memory: 512M
