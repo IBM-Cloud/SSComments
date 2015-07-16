@@ -5,9 +5,10 @@ var http = require('http');
 var path = require('path');
 var fs = require('fs');
 var rawjs = require('raw.js');
+var Promise = require('bluebird');
 /** Referenced variables */
 var app = express();
-var reddit = new rawjs("SubredditSimulatorCommentAggregator");
+var reddit = Promise.promisifyAll(new rawjs("SubredditSimulatorCommentAggregator"));
 var db;
 var cloudant;
 var fileToUpload;
@@ -42,7 +43,7 @@ if (app.get('env') === 'development') {
 function initDBConnection () {
   console.log('creating db connection...');
   cloudant = require('cloudant')(dbCredentials.url);
-  db = cloudant.use(dbCredentials.dbName);
+  db = Promise.promisifyAll(cloudant.use(dbCredentials.dbName));
 }
 initDBConnection();
 
@@ -57,57 +58,52 @@ function addCommentsToCloudant (after) {
   if (after) {
     redditargs['after'] = 't1_' + after;
   }
-  reddit.comments(redditargs, function (err, res) {
-    if (err) {
-      console.error(err);
-    } else {
-      // then we build an array of ids to see if we already know about these comments
-      var ids = res.data.children.map(function (child) { return child.data.id });
-      var data = res.data;
-      db.view('ss_design', 'ss_ids', {keys: ids}, function (err, body, headers) {
-        if (err) {
-          console.error(err);
-        } else {
-          // build a map of comment ids to _revs
-          var idToRevMap = {};
-          var rows = body.rows;
-          if (rows.length) {
-            for (var i = 0; i < rows.length; i++) {
-              var row = rows[i];
-              idToRevMap[row.id] = row.value._rev;
-            }
-          }
-          // now we build an array of comments from the raw reddit data
-          var docs = [];
-          for (var i = 0; i < data.children.length; i++) {
-            var comment = data.children[i].data;
-            // if this comment is already in cloudant, tack on the _rev
-            if (idToRevMap[comment.id]) {
-              comment['_rev'] = idToRevMap[comment.id];
-            }
-            // we like to call these puppies _ids, not ids
-            comment['_id'] = comment.id;
-            delete comment.id;
-            // add it to our array
-            docs.push(comment);
-          }
-          // perform the bulk operation - this'll do updates for things that are already there
-          // and insert the comments that we don't yet know about
-          db.bulk({docs: docs}, {}, function (err, body, headers) {
-            if (err) {
-              console.error(err);
-            } else {
-              // get the next page of comments
-              var nextIdToGet = docs.length && docs[docs.length - 1]._id;
-              if (nextIdToGet) {
-                // wait 3s before getting the next page
-                setTimeout(function () { addCommentsToCloudant(nextIdToGet); }.bind(this), 3000);
-              }
-            }
-          });
-        }
-      });
+
+  var data, docs = [];
+  reddit.commentsAsync(redditargs).then(function (res) {
+    // then we build an array of ids to see if we already know about these comments
+    var ids = res.data.children.map(function (child) { return child.data.id });
+    data = res.data;
+    return db.viewAsync('ss_design', 'ss_ids', {keys: ids});
+  }).then(function (args) {
+    var body = args[0];
+    var headers = args[1];
+    // build a map of comment ids to _revs
+    var idToRevMap = {};
+    var rows = body.rows;
+    if (rows.length) {
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        idToRevMap[row.id] = row.value._rev;
+      }
     }
+    // now we build an array of comments from the raw reddit data
+    for (var i = 0; i < data.children.length; i++) {
+      var comment = data.children[i].data;
+      // if this comment is already in cloudant, tack on the _rev
+      if (idToRevMap[comment.id]) {
+        comment['_rev'] = idToRevMap[comment.id];
+      }
+      // we like to call these puppies _ids, not ids
+      comment['_id'] = comment.id;
+      delete comment.id;
+      // add it to our array
+      docs.push(comment);
+    }
+    // perform the bulk operation - this'll do updates for things that are already there
+    // and insert the comments that we don't yet know about
+    return db.bulkAsync({docs: docs}, {});
+  }).then(function (args) {
+    var body = args[0];
+    var headers = args[1];
+    // get the next page of comments
+    var nextIdToGet = docs.length && docs[docs.length - 1]._id;
+    if (nextIdToGet) {
+      // wait 3s before getting the next page
+      // setTimeout(function () { addCommentsToCloudant(nextIdToGet); }.bind(this), 3000);
+    }
+  }).catch(function (e) {
+    console.log(e);
   });
 }
 addCommentsToCloudant();
