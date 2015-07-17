@@ -51,22 +51,27 @@ function initDBConnection () {
  * @param {String} after - optional, an id to start "after" - for pagination
  */
 var count;
-function addCommentsToCloudant (after) {
+function addCommentsToCloudant (after, link) {
   console.log('getting more comments...');
   // first we get some comments from reddit
   var redditargs = {r: 'SubredditSimulator', limit: 100};
   if (after) {
     redditargs['after'] = 't1_' + after;
     redditargs['count'] = count;
-    console.log('count: ' + count);
     console.log('after: ' + after);
   } else {
     count = 0;
   }
+  console.log('count: ' + count);
+
+  if (link) {
+    redditargs['link'] = link;
+    console.log('link: ' + link);
+  }
 
   var rawComments;
   return reddit.commentsAsync(redditargs).then(function (res) {
-    rawComments = res.data.children;
+    rawComments = res.length ? res[0].data.children : res.data.children;
     count += rawComments.length;
     return uploadComments(rawComments);
   }).then(function (args) {
@@ -77,13 +82,32 @@ function addCommentsToCloudant (after) {
       var nextIdToGet = rawComments[rawComments.length - 1].data._id;
     }
     // wait 3s before getting the next page
-    // setTimeout(function () { addCommentsToCloudant(nextIdToGet); }.bind(this), 2000);
-    if (!nextIdToGet) {
-      console.log('starting back at page one...');
-      console.log('');
+    if (nextIdToGet) {
+      setTimeout(function () { addCommentsToCloudant(nextIdToGet, link); }.bind(this), 2000);
     }
   }).catch(function (e) {
-    console.log(e);
+    console.error(e);
+  });
+}
+
+/**
+ * Get the 100 newest posts, and then get the comments for 'em
+ */
+var posts, j = 0;
+function addNewPostsToCloudant () {
+  console.log('getting comments from posts...');
+  var redditargs = {r: 'SubredditSimulator'};
+  return reddit.newAsync(redditargs).then(function (args) {
+    posts = args.children;
+    for (var i = 0; i < posts.length; i++) {
+      // kick 'em off every 20 seconds
+      // TODO - have good promise handling in addCommentsToCloudant so we can chain these instead
+      setTimeout(function () { addCommentsToCloudant(null, posts[j++].data.id)}.bind(this), i*20000);
+    }
+    // var post = posts[posts.length - 1].data;
+    // return addCommentsToCloudant(null, post.id);
+  }).catch(function (e) {
+    console.error(e);
   });
 }
 
@@ -124,7 +148,7 @@ function uploadComments (comments) {
     // perform the bulk operation - this'll do updates for things that are already there
     // and insert the comments that we don't yet know about
     return db.bulkAsync({docs: docs}, {});
-  })
+  });
 }
 
 /** Routes time */
@@ -149,4 +173,3 @@ http.createServer(app).listen(app.get('port'), function() {
   console.log('Express server listening on port ' + app.get('port'));
 });
 initDBConnection();
-addCommentsToCloudant();
