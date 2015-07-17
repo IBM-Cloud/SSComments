@@ -45,27 +45,57 @@ function initDBConnection () {
   cloudant = require('cloudant')(dbCredentials.url);
   db = Promise.promisifyAll(cloudant.use(dbCredentials.dbName));
 }
-initDBConnection();
 
 /**
- * Put some stuff in cloudant
+ * Get comments from /comments and put them cloudant
  * @param {String} after - optional, an id to start "after" - for pagination
  */
+var count;
 function addCommentsToCloudant (after) {
   console.log('getting more comments...');
   // first we get some comments from reddit
-  var redditargs = {r: 'SubredditSimulator'};
+  var redditargs = {r: 'SubredditSimulator', limit: 100};
   if (after) {
     redditargs['after'] = 't1_' + after;
+    redditargs['count'] = count;
+    console.log('count: ' + count);
+    console.log('after: ' + after);
+  } else {
+    count = 0;
   }
 
-  var data, docs = [];
-  reddit.commentsAsync(redditargs).then(function (res) {
-    // then we build an array of ids to see if we already know about these comments
-    var ids = res.data.children.map(function (child) { return child.data.id });
-    data = res.data;
-    return db.viewAsync('ss_design', 'ss_ids', {keys: ids});
+  var rawComments;
+  return reddit.commentsAsync(redditargs).then(function (res) {
+    rawComments = res.data.children;
+    count += rawComments.length;
+    return uploadComments(rawComments);
   }).then(function (args) {
+    var body = args[0];
+    var headers = args[1];
+    // get the next page of comments
+    if (rawComments.length) {
+      var nextIdToGet = rawComments[rawComments.length - 1].data._id;
+    }
+    // wait 3s before getting the next page
+    // setTimeout(function () { addCommentsToCloudant(nextIdToGet); }.bind(this), 2000);
+    if (!nextIdToGet) {
+      console.log('starting back at page one...');
+      console.log('');
+    }
+  }).catch(function (e) {
+    console.log(e);
+  });
+}
+
+/**
+ * Given an array of raw comment data from the reddit api, upload it to cloudant
+ * First check to see if that comment id is already in the database, if it is, update
+ * it with the most recent data
+ * @param {Array.<CommentJson>}
+ */
+function uploadComments (comments) {
+  var ids = comments.map(function (child) { return child.data.id });
+  return db.viewAsync('ss_design', 'ss_ids', {keys: ids}).then(function (args) {
     var body = args[0];
     var headers = args[1];
     // build a map of comment ids to _revs
@@ -78,8 +108,9 @@ function addCommentsToCloudant (after) {
       }
     }
     // now we build an array of comments from the raw reddit data
-    for (var i = 0; i < data.children.length; i++) {
-      var comment = data.children[i].data;
+    var docs = [];
+    for (var i = 0; i < comments.length; i++) {
+      var comment = comments[i].data;
       // if this comment is already in cloudant, tack on the _rev
       if (idToRevMap[comment.id]) {
         comment['_rev'] = idToRevMap[comment.id];
@@ -93,20 +124,8 @@ function addCommentsToCloudant (after) {
     // perform the bulk operation - this'll do updates for things that are already there
     // and insert the comments that we don't yet know about
     return db.bulkAsync({docs: docs}, {});
-  }).then(function (args) {
-    var body = args[0];
-    var headers = args[1];
-    // get the next page of comments
-    var nextIdToGet = docs.length && docs[docs.length - 1]._id;
-    if (nextIdToGet) {
-      // wait 3s before getting the next page
-      // setTimeout(function () { addCommentsToCloudant(nextIdToGet); }.bind(this), 3000);
-    }
-  }).catch(function (e) {
-    console.log(e);
-  });
+  })
 }
-addCommentsToCloudant();
 
 /** Routes time */
 app.get('/', function (req, res) {
@@ -129,3 +148,5 @@ app.get('/comments', function (req, res) {
 http.createServer(app).listen(app.get('port'), function() {
   console.log('Express server listening on port ' + app.get('port'));
 });
+initDBConnection();
+addCommentsToCloudant();
