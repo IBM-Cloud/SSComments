@@ -1,6 +1,6 @@
 var React = require('react');
 var requester = require('./requester');
-var Comment = require('./components/Comment');
+var CommentList = require('./components/CommentList');
 
 var SSComments = React.createClass({
   getInitialState: function () {
@@ -8,11 +8,10 @@ var SSComments = React.createClass({
   },
 
   render: function () {
-    var comments = this.state.comments.map(c => <Comment comment={c} />);
     return (
       <div className="ss-comments">
         <h1>Subreddit Simulator Comment Town</h1>
-        {comments}
+        <CommentList comments={this.state.comments} />
       </div>
     );
   },
