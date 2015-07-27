@@ -3,113 +3,163 @@ var Promise = require('bluebird');
 var rawjs = require('raw.js');
 var reddit = Promise.promisifyAll(new rawjs("SubredditSimulatorCommentAggregator"));
 
-/**
- * Get comments from /comments and put them cloudant
- * @param {String} after - optional, an id to start "after" - for pagination
- */
-var count;
-function addCommentsToCloudant (after, link) {
-  console.log('getting more comments...');
-  // first we get some comments from reddit
-  var redditargs = {r: 'SubredditSimulator', limit: 100};
-  if (link) {
-    redditargs['link'] = link;
-    redditargs['sort'] = 'new';
-    redditargs['depth'] = 3;
-    console.log('link: ' + link);
-  }
-  if (after) {
-    redditargs['after'] = 't1_' + after;
-    redditargs['count'] = count;
-    console.log('after: ' + after);
-  } else {
-    count = 0;
-  }
-  console.log('count: ' + count);
-
-  var rawComments;
-  return reddit.commentsAsync(redditargs).then(function (res) {
-    rawComments = res.length ? res[0].data.children : res.data.children;
-    count += rawComments.length;
-    return uploadComments(rawComments);
-  }).then(function (args) {
-    var body = args[0];
-    var headers = args[1];
-    // get the next page of comments
-    if (rawComments.length) {
-      var nextIdToGet = rawComments[rawComments.length - 1].data._id;
-    }
-    // wait 3s before getting the next page
-    if (nextIdToGet) {
-      setTimeout(function () { addCommentsToCloudant(nextIdToGet, link); }.bind(this), 2000);
-    }
-  }).catch(function (e) {
-    console.error(e);
-  });
-}
-
-/**
- * Get the 100 newest posts, and then get the comments for 'em
- */
-var posts, j = 0;
-function addNewPostsToCloudant () {
-  console.log('getting comments from posts...');
-  var redditargs = {r: 'SubredditSimulator'};
-  return reddit.newAsync(redditargs).then(function (args) {
-    posts = args.children;
-    for (var i = 0; i < posts.length; i++) {
-      // kick 'em off every 20 seconds
-      // TODO - have good promise handling in addCommentsToCloudant so we can chain these instead
-      setTimeout(function () { addCommentsToCloudant(null, posts[j++].data.id)}.bind(this), i*4000);
-    }
-    // var post = posts[posts.length - 1].data;
-    // return addCommentsToCloudant(null, post.id);
-  }).catch(function (e) {
-    console.error(e);
-  });
-}
-
-/**
- * Given an array of raw comment data from the reddit api, upload it to cloudant
- * First check to see if that comment id is already in the database, if it is, update
- * it with the most recent data
- * @param {Array.<CommentJson>}
- */
-function uploadComments (comments) {
-  var ids = comments.map(function (child) { return child.data.id });
-  return db.viewAsync('ss_design', 'ss_ids', {keys: ids}).then(function (args) {
-    var body = args[0];
-    var headers = args[1];
-    // build a map of comment ids to _revs
-    var idToRevMap = {};
-    var rows = body.rows;
-    if (rows.length) {
-      for (var i = 0; i < rows.length; i++) {
-        var row = rows[i];
-        idToRevMap[row.id] = row.value._rev;
-      }
-    }
-    // now we build an array of comments from the raw reddit data
-    var docs = [];
-    for (var i = 0; i < comments.length; i++) {
-      var comment = comments[i].data;
-      // if this comment is already in cloudant, tack on the _rev
-      if (idToRevMap[comment.id]) {
-        comment['_rev'] = idToRevMap[comment.id];
-      }
-      // we like to call these puppies _ids, not ids
-      comment['_id'] = comment.id;
-      delete comment.id;
-      // add it to our array
-      docs.push(comment);
-    }
-    // perform the bulk operation - this'll do updates for things that are already there
-    // and insert the comments that we don't yet know about
-    return db.bulkAsync({docs: docs}, {});
-  });
-}
-
 module.exports = {
-  addCommentsToCloudant: addCommentsToCloudant,
-  addNewPostsToCloudant: addNewPostsToCloudant
+  posts: undefined,
+  postIterator: undefined,
+
+  /**
+   * For a given link (undefined if you wanna just load all new comments), keep loading
+   * the next page and uploading the results to cloudant.
+   * @return {Promise} resolves when done, rejects if it error'd out
+   */
+  getAndUploadComments: function (link) {
+    return new Promise(function (resolve, reject) {
+      this._getAndUploadHelper(null, link, null, resolve, reject);
+    }.bind(this));
+  },
+
+  /**
+   * Get comments from /comments and put them cloudant. Note: this is recursive.
+   * @param {String} after - optional, a comment id to start "after" - for pagination
+   * @param {String} link - optional, a link id to load new comments for
+   * @param {number} count - optional, used for pagination, specify how many comments we've already loaded
+   * @param {function} resolve - optional, a Promise's resolve function that we can resolve if we've retrieved the last comment
+   * @param {function} reject - optional, a Promise's reject function we can reject
+   */
+  _getAndUploadHelper: function (after, link, count, resolve, reject) {
+    var log;
+    count = count || 0;
+    // format the args for the commentsAsync api
+    var redditargs = {r: 'SubredditSimulator', limit: 100};
+    if (link) {
+      redditargs.link = link;
+      redditargs.sort = 'new';
+      log = 'getting comments for post ' + link;
+    } else {
+      log = 'getting newest comments';
+    }
+    if (after) {
+      redditargs.after = 't1_' + after;
+      redditargs.count = count;
+      log += ' after ' + after + ', total so far is ' + count;
+    } else {
+      count = 0;
+    }
+    console.log(log);
+
+    var rawComments;
+    return reddit.commentsAsync(redditargs).then(function (res) {
+      rawComments = res.length ? res[0].data.children : res.data.children;
+      count += rawComments.length;
+      return this.uploadComments(rawComments);
+    }.bind(this)).then(function (args) {
+      var body = args[0];
+      var headers = args[1];
+      // get the next page of comments
+      if (rawComments.length) {
+        var nextIdToGet = rawComments[rawComments.length - 1].data._id;
+      }
+      // wait 3s before getting the next page
+      if (nextIdToGet) {
+        setTimeout(this._getAndUploadHelper.bind(this, nextIdToGet, link, count, resolve, reject), 2000);
+      } else {
+        resolve && resolve(count);
+      }
+    }.bind(this)).catch(function (e) {
+      console.error(e);
+      // gotta figure out why paging isnt working when specifying a link
+      resolve && resolve(count);
+    });
+  },
+
+  /**
+   * Keep on loading posts until there are no more. For each post, load all of its comments
+   * and upload them. Note: this recursively calls itself until it is done.
+   * @param {String} after - optional, if we're paging, start the next fetch after this given id
+   * @return {Promise} resolve when done
+   */
+  getAndUploadPostComments: function (after) {
+    console.log('getting comments from posts...');
+    var posts;
+    var redditargs = {r: 'SubredditSimulator', limit: 100};
+    if (after) {
+      redditargs.after = 't3_' + after;
+    }
+    return reddit.newAsync(redditargs).then(function (args) {
+      return (new Promise(function (resolve, reject) {
+        return this._getAndUploadPostHelper(args.children, resolve, reject);
+      }.bind(this))).then(function (lastid) {
+        if (lastid) {
+          return this.getAndUploadPostComments(lastid);
+        } else {
+          return;
+        }
+      }.bind(this));
+    }.bind(this)).catch(function (e) {
+      console.error(e);
+    });
+  },
+
+  /**
+   * Given an array of posts, load the comments for each post one by one and add them to
+   * cloudant.
+   * @param  {Array.<Reddit Post JSON>} posts - the array of posts
+   * @param  {function} resolve - a Promise's resolve function
+   * @param  {function} reject  [description]
+   * @param  {String} lastid - passed down recursively so that we can resolve with the last ID
+   * that we fetched comments for. Used for paging the posts
+   */
+  _getAndUploadPostHelper: function (posts, resolve, reject, lastid) {
+    console.log('loading comments for ' + posts.length + ' more posts');
+    if (posts.length) {
+      var currPost = posts.shift();
+      this.getAndUploadComments(currPost.data.id).then(function (count) {
+        this._getAndUploadPostHelper(posts, resolve, reject, currPost.data.id);
+      }.bind(this)).catch(function (e) {
+        reject(e);
+      });
+    } else {
+      resolve(lastid);
+    }
+  },
+
+  /**
+   * Given an array of raw comment data from the reddit api, upload it to cloudant
+   * First check to see if that comment id is already in the database, if it is, update
+   * it with the most recent data
+   * @param {Array.<CommentJson>}
+   */
+  uploadComments: function (comments) {
+    var ids = comments.map(function (child) { return child.data.id });
+    return db.viewAsync('ss_design', 'ss_ids', {keys: ids}).then(function (args) {
+      var body = args[0];
+      var headers = args[1];
+      // build a map of comment ids to _revs
+      var idToRevMap = {};
+      var rows = body.rows;
+      if (rows.length) {
+        for (var i = 0; i < rows.length; i++) {
+          var row = rows[i];
+          idToRevMap[row.id] = row.value._rev;
+        }
+      }
+      // now we build an array of comments from the raw reddit data
+      var docs = [];
+      for (var i = 0; i < comments.length; i++) {
+        var comment = comments[i].data;
+        // if this comment is already in cloudant, tack on the _rev
+        if (idToRevMap[comment.id]) {
+          comment['_rev'] = idToRevMap[comment.id];
+        }
+        // we like to call these puppies _ids, not ids
+        comment['_id'] = comment.id;
+        delete comment.id;
+        // add it to our array
+        docs.push(comment);
+      }
+      // perform the bulk operation - this'll do updates for things that are already there
+      // and insert the comments that we don't yet know about
+      return db.bulkAsync({docs: docs}, {});
+    });
+  }
 }
