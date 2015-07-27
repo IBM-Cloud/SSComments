@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node app.js",
-    "build": "gulp build"
+    "build": "gulp build",
+    "dev": "node app.js; gulp dev"
   },
   "dependencies": {
     "bluebird": "^2.9.34",
