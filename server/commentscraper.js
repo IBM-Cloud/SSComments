@@ -1,50 +1,7 @@
-/** Module dependencies. */
-var express = require('express');
-var bodyParser = require('body-parser');
-var http = require('http');
-var path = require('path');
-var fs = require('fs');
-var rawjs = require('raw.js');
+var db = require('./db');
 var Promise = require('bluebird');
-/** Referenced variables */
-var app = express();
+var rawjs = require('raw.js');
 var reddit = Promise.promisifyAll(new rawjs("SubredditSimulatorCommentAggregator"));
-var db;
-var cloudant;
-var fileToUpload;
-
-// couldn't figure out how to make JSON environment variables locally so i
-// set it to a stringified JSON object of the deployed environment variables
-var cloudantNoSQLDB;
-if (typeof process.env.VCAP_SERVICES === 'string') {
-  cloudantNoSQLDB = JSON.parse(process.env.VCAP_SERVICES).cloudantNoSQLDB;
-} else {
-  cloudantNoSQLDB = process.env.VCAP_SERVICES.cloudantNoSQLDB;
-}
-var credentials = cloudantNoSQLDB[0].credentials;
-var dbCredentials = {
-  dbName: 'ss_comments_db',
-  host: credentials.host,
-  port: credentials.port,
-  password: credentials.password,
-  url: credentials.url,
-  user: credentials.username
-};
-
-app.set('port', process.env.PORT || 3000);
-app.use(express.logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
-if (app.get('env') === 'development') {
-  app.use(express.errorHandler());
-}
-
-function initDBConnection () {
-  console.log('creating db connection...');
-  cloudant = require('cloudant')(dbCredentials.url);
-  db = Promise.promisifyAll(cloudant.use(dbCredentials.dbName));
-}
 
 /**
  * Get comments from /comments and put them cloudant
@@ -55,6 +12,12 @@ function addCommentsToCloudant (after, link) {
   console.log('getting more comments...');
   // first we get some comments from reddit
   var redditargs = {r: 'SubredditSimulator', limit: 100};
+  if (link) {
+    redditargs['link'] = link;
+    redditargs['sort'] = 'new';
+    redditargs['depth'] = 3;
+    console.log('link: ' + link);
+  }
   if (after) {
     redditargs['after'] = 't1_' + after;
     redditargs['count'] = count;
@@ -63,11 +26,6 @@ function addCommentsToCloudant (after, link) {
     count = 0;
   }
   console.log('count: ' + count);
-
-  if (link) {
-    redditargs['link'] = link;
-    console.log('link: ' + link);
-  }
 
   var rawComments;
   return reddit.commentsAsync(redditargs).then(function (res) {
@@ -102,7 +60,7 @@ function addNewPostsToCloudant () {
     for (var i = 0; i < posts.length; i++) {
       // kick 'em off every 20 seconds
       // TODO - have good promise handling in addCommentsToCloudant so we can chain these instead
-      setTimeout(function () { addCommentsToCloudant(null, posts[j++].data.id)}.bind(this), i*20000);
+      setTimeout(function () { addCommentsToCloudant(null, posts[j++].data.id)}.bind(this), i*4000);
     }
     // var post = posts[posts.length - 1].data;
     // return addCommentsToCloudant(null, post.id);
@@ -151,25 +109,7 @@ function uploadComments (comments) {
   });
 }
 
-/** Routes time */
-app.get('/', function (req, res) {
-  res.render('index');
-});
-
-/** Get 20 comments sorted by score */
-app.get('/comments', function (req, res) {
-  db.view('ss_design', 'ss_score', {descending: true, limit: 100}, function (err, body, headers) {
-    if (err) {
-      res.status(502);
-      res.json(err);
-    } else {
-      res.json(body);
-    }
-  });
-});
-
-/** Start her up, boys */
-http.createServer(app).listen(app.get('port'), function() {
-  console.log('Express server listening on port ' + app.get('port'));
-});
-initDBConnection();
+module.exports = {
+  addCommentsToCloudant: addCommentsToCloudant,
+  addNewPostsToCloudant: addNewPostsToCloudant
+}

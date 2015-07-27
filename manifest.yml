@@ -5,7 +5,7 @@ applications:
   disk_quota: 1024M
   host: SSComments
   name: SSComments
-  command: node app.js
+  command: node server/app.js
   path: .
   domain: mybluemix.net
   instances: 1
