@@ -44,7 +44,7 @@ var Actions = {
   },
 
   loadThisMonthComments: function () {
-    Dispatcher.dispatch({ actionType: Constants.TAB_SWTICH_THIS_MONTH });
+    Dispatcher.dispatch({ actionType: Constants.TAB_SWITCH_THIS_MONTH });
     Dispatcher.dispatch({ actionType: Constants.COMMENTS_LOADING_START });
     requester.loadComments('thismonth').then(comments => {
       Dispatcher.dispatch({ actionType: Constants.COMMENTS_DATA, comments: comments });
