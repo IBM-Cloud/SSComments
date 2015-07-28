@@ -1,51 +1,55 @@
-@text-accent-color: #0099ff;
+@accent-color: #0099ff;
 @secondary-text-color: #c1c1c1;
 
-* {
-  outline: none;
-  box-sizing: border-box;
-}
-
-body {
-  padding: 0;
-  margin: 0;
-}
-
-html, body {
-  height: 100%;
-  width: 100%;
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
+// get the page ready
+* { outline: none; box-sizing: border-box; }
+body { padding: 0; margin: 0; }
+html, body { height: 100%; width: 100%; position: absolute; top: 0; right: 0; }
 body, button, input {
-  font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-family: "HelveticaNeue-Light","Helvetica Neue Light","Helvetica Neue",Helvetica,Arial,"Lucida Grande",sans-serif;
   font-size: 1em;
 }
 h1, h2, h3, h4, h5, h6 {margin: 0;}
-h1 { font-size: 2.25em; }
+h1 { font-size: 2.25em; font-family: "HelveticaNeue-UltraLight", "Helvetica Neue UltraLight", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;}
 h2 { font-size: 1.75em; }
 h3 { font-size: 1.5em; }
 h4 { font-size: 1.25em; }
 h5 { font-size: 1em; }
 h6 { font-size: 1em; color: @secondary-text-color; font-weight: normal; }
 
+// let the real CSS begin
 .ss-comments {
-  width: 750px;
-  margin: 0 auto;
-  padding-top: 50px;
   height: 100%;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+
+  .ss-title {
+    font-weight: normal;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    color: #fff;
+    background-color: @accent-color;
+    text-indent: 30px;
+  }
 
   .time-tabs {
     display: flex;
     padding: 0;
     list-style: none;
-    justify-content: space-between;
+    width: 60%;
+    margin: 30px auto 20px;
+    justify-content: space-around;
 
     .tab {
       cursor: pointer;
       color: @secondary-text-color;
+      span {
+        padding: 0 5px;
+      }
       &:after {
         content: '';
         display: block;
@@ -53,40 +57,48 @@ h6 { font-size: 1em; color: @secondary-text-color; font-weight: normal; }
         background-color: @secondary-text-color;
       }
       &.open, &:hover {
-        color: @text-accent-color;
+        color: @accent-color;
         &:after {
-          background-color: @text-accent-color;
+          background-color: @accent-color;
         }
       }
     }
   }
 
   .comment-list {
+    flex: 1;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 20%;
   }
 
   .comment {
-    margin: 15px 0px;
+    margin-bottom: 25px;
     .comment-body {
       font-style: italic;
+      font-weight: normal;
+      font-style: normal;
       a {
         text-decoration: none;
         &:visited, &:link {
           color: #000;
         }
         &:hover, &:active {
-          color: @text-accent-color;
+          color: @accent-color;
         }
       }
     }
     .comment-info {
+      margin-top: 5px;
       display: flex;
     }
     .comment-author {
+      font-weight: normal;
       &:visited, &:link {
         color: @secondary-text-color;
       }
       &:hover, &:active {
-        color: @text-accent-color;
+        color: @accent-color;
       }
     }
     .comment-score {
