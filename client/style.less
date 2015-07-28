@@ -29,7 +29,7 @@ h2 { font-size: 1.75em; }
 h3 { font-size: 1.5em; }
 h4 { font-size: 1.25em; }
 h5 { font-size: 1em; }
-h6 { font-size: 1em; color: @secondary-text-color; }
+h6 { font-size: 1em; color: @secondary-text-color; font-weight: normal; }
 
 .ss-comments {
   width: 750px;
@@ -68,9 +68,31 @@ h6 { font-size: 1em; color: @secondary-text-color; }
     margin: 15px 0px;
     .comment-body {
       font-style: italic;
+      a {
+        text-decoration: none;
+        &:visited, &:link {
+          color: #000;
+        }
+        &:hover, &:active {
+          color: @text-accent-color;
+        }
+      }
+    }
+    .comment-info {
+      display: flex;
     }
     .comment-author {
-
+      &:visited, &:link {
+        color: @secondary-text-color;
+      }
+      &:hover, &:active {
+        color: @text-accent-color;
+      }
+    }
+    .comment-score {
+    }
+    .comment-date {
+      margin-left: auto;
     }
   }
 }
