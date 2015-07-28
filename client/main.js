@@ -13,7 +13,7 @@ var SSComments = React.createClass({
   render: function () {
     return (
       <div className='ss-comments'>
-        <h1>Subreddit Simulator Comment Town</h1>
+        <h1>Subreddit Simulator Top Comments</h1>
         <TimeTabs openTab={this.state.openTab} />
         <CommentList comments={this.state.comments} />
       </div>

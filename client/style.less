@@ -11,9 +11,12 @@ body {
   margin: 0;
 }
 
-html, .ss-comments {
+html, body {
   height: 100%;
   width: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 body, button, input {
@@ -29,7 +32,10 @@ h5 { font-size: 1em; }
 h6 { font-size: 1em; color: @secondary-text-color; }
 
 .ss-comments {
-  padding: 50px 350px;
+  width: 750px;
+  margin: 0 auto;
+  padding-top: 50px;
+  height: 100%;
 
   .time-tabs {
     display: flex;
@@ -53,6 +59,9 @@ h6 { font-size: 1em; color: @secondary-text-color; }
         }
       }
     }
+  }
+
+  .comment-list {
   }
 
   .comment {
