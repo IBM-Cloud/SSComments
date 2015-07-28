@@ -4,6 +4,7 @@ var rawjs = require('raw.js');
 var reddit = Promise.promisifyAll(new rawjs("SubredditSimulatorCommentAggregator"));
 
 module.exports = {
+  loadLimit: 100,
   posts: undefined,
   postIterator: undefined,
 
@@ -30,7 +31,7 @@ module.exports = {
     var log;
     count = count || 0;
     // format the args for the commentsAsync api
-    var redditargs = {r: 'SubredditSimulator', limit: 100};
+    var redditargs = {r: 'SubredditSimulator', limit: this.loadLimit};
     if (link) {
       redditargs.link = link;
       redditargs.sort = 'new';
@@ -56,14 +57,14 @@ module.exports = {
       var body = args[0];
       var headers = args[1];
       // get the next page of comments
-      if (rawComments.length) {
+      if (rawComments.length && rawComments.length >= this.loadLimit) {
         var nextIdToGet = rawComments[rawComments.length - 1].data._id;
       }
       // wait 3s before getting the next page
       if (nextIdToGet) {
         setTimeout(this._getAndUploadHelper.bind(this, nextIdToGet, link, count, resolve, reject), 2000);
       } else {
-        resolve && resolve(count);
+        setTimeout(resolve.bind(this, count), 2000);
       }
     }.bind(this)).catch(function (e) {
       console.error(e);
@@ -81,7 +82,7 @@ module.exports = {
   getAndUploadPostComments: function (after) {
     console.log('getting comments from posts...');
     var posts;
-    var redditargs = {r: 'SubredditSimulator', limit: 100};
+    var redditargs = {r: 'SubredditSimulator', limit: this.loadLimit};
     if (after) {
       redditargs.after = 't3_' + after;
     }
@@ -154,12 +155,19 @@ module.exports = {
         // we like to call these puppies _ids, not ids
         comment['_id'] = comment.id;
         delete comment.id;
+        // delete the children - TODO: we should actually flatten these
+        if (comment.children) {
+          delete comment.children;
+        }
         // add it to our array
         docs.push(comment);
       }
       // perform the bulk operation - this'll do updates for things that are already there
       // and insert the comments that we don't yet know about
-      return db.bulkAsync({docs: docs}, {});
+      return db.bulkAsync({docs: docs}, {}).then(function () {
+        console.log('uploaded ' + docs.length + ' comments');
+        return arguments;
+      });
     });
   }
 }
