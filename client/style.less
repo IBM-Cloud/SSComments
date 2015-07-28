@@ -1,5 +1,4 @@
-@primary-color1: #6DC6F3;
-@background-color1: #f3f3f3;
+@text-accent-color: #0099ff;
 @secondary-text-color: #c1c1c1;
 
 * {
@@ -30,7 +29,31 @@ h5 { font-size: 1em; }
 h6 { font-size: 1em; color: @secondary-text-color; }
 
 .ss-comments {
-  padding: 50px 150px;
+  padding: 50px 350px;
+
+  .time-tabs {
+    display: flex;
+    padding: 0;
+    list-style: none;
+    justify-content: space-between;
+
+    .tab {
+      cursor: pointer;
+      color: @secondary-text-color;
+      &:after {
+        content: '';
+        display: block;
+        height: 2px;
+        background-color: @secondary-text-color;
+      }
+      &.open, &:hover {
+        color: @text-accent-color;
+        &:after {
+          background-color: @text-accent-color;
+        }
+      }
+    }
+  }
 
   .comment {
     margin: 15px 0px;

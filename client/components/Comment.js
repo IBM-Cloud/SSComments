@@ -2,7 +2,7 @@ var React = require('react');
 
 var Comment = React.createClass({
   render: function () {
-    var comment = this.props.comment.value;
+    var comment = this.props.comment.value || this.props.comment.fields;
     return (
       <div className="comment">
         <h5 className="comment-body">{'"' + comment.body + '"'}</h5>
