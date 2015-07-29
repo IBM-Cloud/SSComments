@@ -22,10 +22,15 @@ app.listen(app.get('port'), function() {
 });
 
 function loadCommentsForever (flag) {
+  console.log('*********************************************');
+  console.log('*********************************************');
+  console.log('************* starting a thing! *************');
+  console.log('*********************************************');
+  console.log('*********************************************');
   if (flag) {
     return commentScraper.getAndUploadComments().finally(loadCommentsForever.bind(this, !flag));
   } else {
     return commentScraper.getAndUploadPostComments().finally(loadCommentsForever.bind(this, !flag));
   }
 }
-loadCommentsForever(true);
+loadCommentsForever(false);

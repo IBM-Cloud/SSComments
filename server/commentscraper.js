@@ -4,9 +4,8 @@ var rawjs = require('raw.js');
 var reddit = Promise.promisifyAll(new rawjs("SubredditSimulatorCommentAggregator"));
 
 module.exports = {
-  loadLimit: 100,
-  posts: undefined,
-  postIterator: undefined,
+  LOAD_LIMIT: 100,        // the max that reddit supports
+  MAX_POST_PAGE_COUNT: 3, // 300 posts = 12.5 days
 
   /**
    * For a given link (undefined if you wanna just load all new comments), keep loading
@@ -31,7 +30,7 @@ module.exports = {
     var log;
     count = count || 0;
     // format the args for the commentsAsync api
-    var redditargs = {r: 'SubredditSimulator', limit: this.loadLimit};
+    var redditargs = {r: 'SubredditSimulator', limit: this.LOAD_LIMIT};
     if (link) {
       redditargs.link = link;
       redditargs.sort = 'new';
@@ -57,7 +56,7 @@ module.exports = {
       var body = args[0];
       var headers = args[1];
       // get the next page of comments
-      if (rawComments.length && rawComments.length >= this.loadLimit) {
+      if (rawComments.length && rawComments.length >= this.LOAD_LIMIT) {
         var nextIdToGet = rawComments[rawComments.length - 1].data._id;
       }
       // wait 3s before getting the next page
@@ -79,10 +78,11 @@ module.exports = {
    * @param {String} after - optional, if we're paging, start the next fetch after this given id
    * @return {Promise} resolve when done
    */
-  getAndUploadPostComments: function (after) {
+  getAndUploadPostComments: function (after, pageCount) {
     console.log('getting comments from posts...');
+    pageCount = pageCount || 0;
     var posts;
-    var redditargs = {r: 'SubredditSimulator', limit: this.loadLimit};
+    var redditargs = {r: 'SubredditSimulator', limit: this.LOAD_LIMIT};
     if (after) {
       redditargs.after = 't3_' + after;
     }
@@ -90,8 +90,8 @@ module.exports = {
       return (new Promise(function (resolve, reject) {
         return this._getAndUploadPostHelper(args.children, resolve, reject);
       }.bind(this))).then(function (lastid) {
-        if (lastid) {
-          return this.getAndUploadPostComments(lastid);
+        if (lastid && pageCount < this.MAX_POST_PAGE_COUNT) {
+          return this.getAndUploadPostComments(lastid, pageCount++);
         } else {
           return;
         }

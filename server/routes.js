@@ -11,29 +11,22 @@ router.get('/', function(req, res) {
 router.get('/comments', function (req, res) {
   var start = req && req.query && req.query.start;
   var end = req && req.query && req.query.end;
+  var prom;
   if (start && end) {
-    db.search('ss_design', 'ss_created', {
+    prom = db.searchAsync('ss_design', 'ss_created', {
       limit: 100,
       q: 'created:[' + start + ' TO ' + end + ']',
       sort: '"-score<number>"'
-    }, function (err, body, headers) {
-      if (err) {
-        res.status(502);
-        res.json(err);
-      } else {
-        res.json(body);
-      }
     });
   } else {
-    db.view('ss_design', 'ss_score', {descending: true, limit: 100}, function (err, body, headers) {
-      if (err) {
-        res.status(502);
-        res.json(err);
-      } else {
-        res.json(body);
-      }
-    });
+    prom = db.viewAsync('ss_design', 'ss_score', {descending: true, limit: 100});
   }
+  prom.then(function (args) {
+    res.json(args[0]);
+  }).catch(function (e) {
+    res.status(502);
+    res.json(err);
+  });
 });
 
 module.exports = router;
