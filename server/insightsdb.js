@@ -12,7 +12,7 @@ if (typeof process.env.VCAP_SERVICES === 'string') {
 // configure the credentials object
 var credentials = cloudantNoSQLDB[0].credentials;
 var dbCredentials = {
-  dbName: 'ss_comments_db',
+  dbName: 'ss_insights_db',
   host: credentials.host,
   port: credentials.port,
   password: credentials.password,
@@ -21,7 +21,7 @@ var dbCredentials = {
 };
 
 // init the db connection
-console.log('creating db connection...');
+console.log('creating insights db connection...');
 var cloudant = require('cloudant')(dbCredentials.url);
 var db = Promise.promisifyAll(cloudant.use(dbCredentials.dbName));
 

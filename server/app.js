@@ -4,8 +4,9 @@ var bodyParser = require('body-parser');
 var path = require('path');
 var logger = require('morgan');
 var routes = require('./routes');
-var db = require('./db');
+var db = require('./commentsdb');
 var commentScraper = require('./commentscraper');
+var personalityInsighter = require('./personalityinsighter');
 
 // configure the express server
 var app = express();
@@ -33,4 +34,4 @@ function loadCommentsForever (flag) {
     return commentScraper.getAndUploadPostComments().finally(loadCommentsForever.bind(this, !flag));
   }
 }
-loadCommentsForever(false);
+loadCommentsForever(true);

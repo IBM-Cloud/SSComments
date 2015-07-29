@@ -19,7 +19,8 @@
     "object-assign": "^3.0.0",
     "raw.js": "^0.4.0",
     "react": "^0.13.3",
-    "superagent": "^1.2.0"
+    "superagent": "^1.2.0",
+    "watson-developer-cloud": "^0.9.26"
   },
   "devDependencies": {
     "autoprefixer": "^5.2.0",

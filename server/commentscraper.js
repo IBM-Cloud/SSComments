@@ -1,4 +1,4 @@
-var db = require('./db');
+var db = require('./commentsdb');
 var Promise = require('bluebird');
 var rawjs = require('raw.js');
 var reddit = Promise.promisifyAll(new rawjs("SubredditSimulatorCommentAggregator"));
