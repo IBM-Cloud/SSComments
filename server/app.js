@@ -21,5 +21,11 @@ app.listen(app.get('port'), function() {
   console.log('Express server listening on port ' + app.get('port'));
 });
 
-commentScraper.getAndUploadComments();
-// commentScraper.getAndUploadPostComments();
+function loadCommentsForever (flag) {
+  if (flag) {
+    return commentScraper.getAndUploadComments().finally(loadCommentsForever.bind(this, !flag));
+  } else {
+    return commentScraper.getAndUploadPostComments().finally(loadCommentsForever.bind(this, !flag));
+  }
+}
+loadCommentsForever(true);

@@ -62,9 +62,9 @@ module.exports = {
       }
       // wait 3s before getting the next page
       if (nextIdToGet) {
-        setTimeout(this._getAndUploadHelper.bind(this, nextIdToGet, link, count, resolve, reject), 2000);
+        setTimeout(this._getAndUploadHelper.bind(this, nextIdToGet, link, count, resolve, reject), 3000);
       } else {
-        setTimeout(resolve.bind(this, count), 2000);
+        setTimeout(resolve.bind(this, count), 3000);
       }
     }.bind(this)).catch(function (e) {
       console.error(e);
