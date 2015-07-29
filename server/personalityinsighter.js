@@ -34,7 +34,7 @@ module.exports = {
       rows = body.rows;
       // filter out the bots with less than 2000 words (watson works best when it has more than 2000)
       // and sort by their total aggregate score
-      rows = rows.filter(function (r) {return r.value.body.split(' ').length > 2000 })
+      rows = rows.filter(function (r) {return r.value.body.split(' ').length > 1200 })
         .sort(function (r1, r2) {
           if (r1.value.score < r2.value.score) {
             return 1;

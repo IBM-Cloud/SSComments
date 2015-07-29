@@ -35,3 +35,4 @@ function loadCommentsForever (flag) {
   }
 }
 loadCommentsForever(true);
+// personalityInsighter.getAggregatedTextRunInsightsAndUpload();

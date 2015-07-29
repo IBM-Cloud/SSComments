@@ -37,7 +37,7 @@ var requester = {
    * Load the first 'page' of comments.
    * @param {String} range - optional, can be one of 'today', 'yesterday', 'thisweek',
    *                         'lastweek', or 'thismonth'
-   * @return a bluebird promise that resolves with an array of comments
+   * @return a promise that resolves with an array of comments
    */
   loadComments: function (range) {
     var start, end;
@@ -70,6 +70,37 @@ var requester = {
           resolve(res.body.rows);
         }
       })
+    });
+  },
+
+  /**
+   * Load an array of bots that have available insights
+   * @return a promise that resolves with said array
+   */
+  fetchBotsWithInsights: function () {
+    return new Promise(function (resolve, reject) {
+      request.get('/availableinsights').end(function (err, res) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res.body);
+        }
+      });
+    });
+  },
+
+  /**
+   * Load the insights for a given bot
+   */
+  fetchInsights: function (bot) {
+    return new Promise(function (resolve, reject) {
+      request.get('/insights').query({bot: bot}).end(function (err, res) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res.body);
+        }
+      });
     });
   }
 }

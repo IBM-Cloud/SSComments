@@ -10,12 +10,12 @@ body, button, input {
   font-size: 1em;
 }
 h1, h2, h3, h4, h5, h6 {margin: 0;}
-h1 { font-size: 2.25em; font-family: "HelveticaNeue-UltraLight", "Helvetica Neue UltraLight", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;}
-h2 { font-size: 1.75em; }
-h3 { font-size: 1.5em; }
-h4 { font-size: 1.25em; }
-h5 { font-size: 1em; }
-h6 { font-size: 1em; color: @secondary-text-color; font-weight: normal; }
+h1 { font-size: 2.25em; font-weight: normal; font-family: "HelveticaNeue-UltraLight", "Helvetica Neue UltraLight", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;}
+h2 { font-size: 1.75em; font-weight: normal;}
+h3 { font-size: 1.5em;  font-weight: normal;}
+h4 { font-size: 1.25em; font-weight: normal;}
+h5 { font-size: 1em;  font-weight: normal;}
+h6 { font-size: 1em;  font-weight: normal;}
 
 // let the real CSS begin
 .ss-comments {
@@ -27,7 +27,6 @@ h6 { font-size: 1em; color: @secondary-text-color; font-weight: normal; }
   flex-direction: column;
 
   .ss-title {
-    font-weight: normal;
     height: 80px;
     display: flex;
     align-items: center;
@@ -65,7 +64,7 @@ h6 { font-size: 1em; color: @secondary-text-color; font-weight: normal; }
     }
   }
 
-  .comment-list {
+  .comment-list, .ss-author-deets {
     flex: 1;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
@@ -75,9 +74,6 @@ h6 { font-size: 1em; color: @secondary-text-color; font-weight: normal; }
   .comment {
     margin-bottom: 25px;
     .comment-body {
-      font-style: italic;
-      font-weight: normal;
-      font-style: normal;
       a {
         text-decoration: none;
         &:visited, &:link {
@@ -91,9 +87,10 @@ h6 { font-size: 1em; color: @secondary-text-color; font-weight: normal; }
     .comment-info {
       margin-top: 5px;
       display: flex;
+      color: @secondary-text-color;
     }
     .comment-author {
-      font-weight: normal;
+      cursor: pointer;
       &:visited, &:link {
         color: @secondary-text-color;
       }
@@ -105,6 +102,48 @@ h6 { font-size: 1em; color: @secondary-text-color; font-weight: normal; }
     }
     .comment-date {
       margin-left: auto;
+    }
+  }
+
+  .ss-author-header {
+    padding: 30px 20% 20px 20%;
+    display: flex;
+    align-items: baseline;
+
+    .back {
+      margin-left: auto;
+      cursor: pointer;
+    }
+  }
+
+  .ss-author-deets {
+    a {
+      &:visited, &:link {
+        color: @secondary-text-color;
+      }
+      &:hover, &:active {
+        color: @accent-color;
+      }
+    }
+    .status-message, .insights {
+      margin-top: 10px;
+    }
+
+    .insights {
+      width: 400px;
+      .insight-category {
+
+      }
+      .insight-subcategory {
+        margin-left: 20px;
+      }
+      .insight-data {
+        display: flex;
+        align-items: baseline;
+        .data-percentile {
+          margin-left: auto;
+        }
+      }
     }
   }
 }

@@ -2,7 +2,16 @@ var Dispatcher = require('./Dispatcher');
 var Constants = require('./Constants');
 var requester = require('./requester');
 
+var botsWithInsights = [];
+
 var Actions = {
+  selectBot: function (bot) {
+    Dispatcher.dispatch({ actionType: Constants.SELECT_BOT, bot: bot});
+    if (bot) {
+      this.loadInsights(bot);
+    }
+  },
+
   loadAllComments: function () {
     Dispatcher.dispatch({ actionType: Constants.TAB_SWITCH_ALL });
     Dispatcher.dispatch({ actionType: Constants.COMMENTS_LOADING_START });
@@ -49,6 +58,22 @@ var Actions = {
     requester.loadComments('thismonth').then(comments => {
       Dispatcher.dispatch({ actionType: Constants.COMMENTS_DATA, comments: comments });
     });
+  },
+
+  fetchBotsWithInsights: function () {
+    requester.fetchBotsWithInsights().then(bots => {
+      botsWithInsights = bots;
+      Dispatcher.dispatch({ actionType: Constants.BOTS_WITH_INSIGHTS, bots: bots });
+    })
+  },
+
+  loadInsights: function (bot) {
+    if (botsWithInsights.indexOf(bot) > -1) {
+      Dispatcher.dispatch({ actionType: Constants.INSIGHTS_LOADING });
+      requester.fetchInsights(bot).then(insights => {
+        Dispatcher.dispatch({ actionType: Constants.INSIGHTS_DATA, insights: insights });
+      });
+    }
   }
 }
 

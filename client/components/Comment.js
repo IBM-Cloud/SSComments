@@ -1,4 +1,5 @@
 var React = require('react');
+var Actions = require('../Actions');
 
 var Comment = React.createClass({
   render: function () {
@@ -12,7 +13,7 @@ var Comment = React.createClass({
           <a href={linkToComment} target='_blank'>{'"' + comment.body + '"'}</a>
         </h5>
         <h6 className='comment-info'>
-          <a className='comment-author' href={'https://www.reddit.com/user/' + comment.author + '?sort=top'} target='_blank'>{'- '  + comment.author}</a>
+          <a className='comment-author' onClick={Actions.selectBot.bind(Actions, comment.author)}>{'- '  + comment.author}</a>
           <span className='comment-score'>{', ' + comment.score}</span>
           <span className='comment-date'>{date.toLocaleDateString() + ' ' + date.toLocaleTimeString()}</span>
         </h6>
