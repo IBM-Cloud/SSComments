@@ -10,8 +10,7 @@ var AuthorBody = React.createClass({
     } else if (this.props.botStatus === Constants.BOT_STATUS_NO_INSIGHTS_AVAILABLE) {
       internals = <div className='status-message'>no insights available</div>;
     } else if (this.props.botStatus === Constants.BOT_STATUS_INSIGHTS_LOADED) {
-      internals = <Insights insights={this.props.insights} />
-      console.log(this.props.insights);
+      internals = <Insights insights={this.props.insights} />;
     }
     return (
       <div className='ss-author-deets'>

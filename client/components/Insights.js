@@ -14,40 +14,41 @@ var Insights = React.createClass({
 
 var Category = React.createClass({
   render: function () {
-    var childData = this.props.children.map(c => <Data name={c.name} percentage={c.percentage} children={c.children} level={0} />);
+    var childData = this.props.children.map(c => this.getChildData(c.name, c.percentage, c.children, 0));
     return (
       <div className='insight-category'>
         <h3 className='category-name'>{this.props.name}</h3>
         {childData}
       </div>
     );
-  }
-});
+  },
 
-var Data = React.createClass({
-  render: function () {
+  getChildData: function (name, percentage, children, level) {
     var childData;
-    if (this.props.children) {
-      childData  = this.props.children.map(c => <Data name={c.name} percentage={c.percentage} children={c.children} level={this.props.level + 1} />);
+    if (children) {
+      childData  = children.map(c => this.getChildData(c.name, c.percentage, c.children, level + 1));
+      if (children.some(c => c.name === name && c.percentage === percentage)) {
+        return {childData};
+      }
     }
     var name;
-    switch (this.props.level) {
+    switch (level) {
       case 0:
-        name = <h4 className='data-name'>{this.props.name}</h4>;
+        name = <h4 className='data-name'>{name}</h4>;
         break;
 
       case 1:
-        name = <h5 className='data-name'>{this.props.name}</h5>;
+        name = <h5 className='data-name'>{name}</h5>;
         break;
 
       default:
-        name = <div className='data-name'>{this.props.name}</div>;
+        name = <div className='data-name'>{name}</div>;
     }
     return (
       <div className='insight-subcategory'>
         <div className='insight-data'>
           {name}
-          <div className='data-percentile'>{(this.props.percentage * 100).toPrecision(4) + '%'}</div>
+          <div className='data-percentile'>{(percentage * 100).toPrecision(4) + '%'}</div>
         </div>
         {childData}
       </div>
