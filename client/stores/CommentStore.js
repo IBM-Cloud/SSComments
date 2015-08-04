@@ -1,6 +1,6 @@
 var _Store = require('./_Store');
 var Dispatcher = require('../Dispatcher');
-var Constants = require('../Constants');
+var Constants = require('../constants/Constants');
 var assign = require('object-assign');
 
 var _comments = [];

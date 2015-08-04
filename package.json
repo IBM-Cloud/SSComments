@@ -19,6 +19,7 @@
     "object-assign": "^3.0.0",
     "raw.js": "^0.4.0",
     "react": "^0.13.3",
+    "react-router": "^0.13.3",
     "superagent": "^1.2.0",
     "watson-developer-cloud": "^0.9.26"
   },

@@ -1,45 +1,50 @@
-var React = require('react');
-var Actions = require('../Actions');
-var classNames = require('classnames');
+import React          from 'react';
+import Actions        from '../Actions';
+import RouteConstants from '../constants/RouteConstants';
+import classNames     from 'classnames';
+import Router         from 'react-router';
+var Link = Router.Link;
 
 var tabActions = [{
   display: 'all',
-  action: Actions.loadAllComments
+  to: RouteConstants.ROUTE_ALL
 }, {
   display: 'today',
-  action: Actions.loadTodayComments
+  to: RouteConstants.ROUTE_TODAY
 }, {
   display: 'yesterday',
-  action: Actions.loadYesterdayComments
+  to: RouteConstants.ROUTE_YESTERDAY
 }, {
   display: 'this week',
-  action: Actions.loadThisWeekComments
+  to: RouteConstants.ROUTE_THIS_WEEK
 }, {
   display: 'last week',
-  action: Actions.loadLastWeekComments
+  to: RouteConstants.ROUTE_LAST_WEEK
 }, {
   display: 'this month',
-  action: Actions.loadThisMonthComments
+  to: RouteConstants.ROUTE_THIS_MONTH
 }];
 
-var Tab = React.createClass({
-  render: function () {
+class Tab extends React.Component {
+  render () {
     var classes = classNames('tab', {
       open: this.props.open
     });
     return (
       <li className={classes}>
-        <span onClick={this.props.action}>{this.props.display}</span>
+        <Link to="comments" params={{range: this.props.to}}>{this.props.display}</Link>
       </li>
     );
   }
-});
+};
 
-var TimeTabs = React.createClass({
-  render: function () {
-    var tabs = tabActions.map(ta => <Tab display={ta.display} action={ta.action} open={this.props.openTab === ta.display} />);
+class TimeTabs extends React.Component {
+  render () {
+    var tabs = tabActions.map(ta =>
+      <Tab display={ta.display} to={ta.to} open={this.props.openTab === ta.display} />
+    );
     return <ul className='time-tabs'>{tabs}</ul>;
   }
-});
+};
 
 module.exports = TimeTabs;

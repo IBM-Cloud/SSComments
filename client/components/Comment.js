@@ -1,8 +1,10 @@
-var React = require('react');
-var Actions = require('../Actions');
+import React   from 'react';
+import Actions from '../Actions';
+import Router  from 'react-router';
+var Link = Router.Link;
 
-var Comment = React.createClass({
-  render: function () {
+class Comment extends React.Component {
+  render () {
     var comment = this.props.comment.value || this.props.comment.fields;
     var date = new Date(comment.created*1000); // *1000 because reddit stores UNIX time
     var linkToComment = 'https://www.reddit.com/r/SubredditSimulator/comments/' + comment.parent_id.substring(3) + '/'
@@ -13,13 +15,13 @@ var Comment = React.createClass({
           <a href={linkToComment} target='_blank'>{'"' + comment.body + '"'}</a>
         </h5>
         <h6 className='comment-info'>
-          <a className='comment-author' onClick={Actions.selectBot.bind(Actions, comment.author)}>{'- '  + comment.author}</a>
+          <Link className='comment-author' to="author" params={{authorid: comment.author}}>{'- '  + comment.author}</Link>
           <span className='comment-score'>{', ' + comment.score}</span>
           <span className='comment-date'>{date.toLocaleDateString() + ' ' + date.toLocaleTimeString()}</span>
         </h6>
       </div>
     );
   }
-});
+};
 
 module.exports = Comment;

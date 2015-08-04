@@ -1,20 +1,16 @@
 var _Store = require('./_Store');
 var Dispatcher = require('../Dispatcher');
-var Constants = require('../Constants');
+var Constants = require('../constants/Constants');
 var assign = require('object-assign');
 
-var botsWithInsights = [];
 var selectedBot;
 var botInsights = {};
-// one of 'no-bot', 'insights-available', 'loading-insights', or 'no-insights-available'
-var status = 'no-bot';
+var status = Constants.BOT_STATUS_NO_BOT;
 
 function selectBot (bot) {
   selectedBot = bot;
   if (!bot) {
     setStatus(Constants.BOT_STATUS_NO_BOT);
-  } else if (botsWithInsights.indexOf(bot) === -1) {
-    setStatus(Constants.BOT_STATUS_NO_INSIGHTS_AVAILABLE);
   }
 }
 
@@ -58,8 +54,11 @@ Dispatcher.register(function(action) {
       BotStore.emitChange();
       break;
 
-    case Constants.BOTS_WITH_INSIGHTS:
-      botsWithInsights = action.bots;
+    case Constants.INSIGHTS_ERROR:
+      if (action.error.status === 404) {
+        setStatus(Constants.BOT_STATUS_NO_INSIGHTS_AVAILABLE);
+        BotStore.emitChange();
+      }
       break;
 
     default:

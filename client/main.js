@@ -1,77 +1,71 @@
-var React = require('react');
-var requester = require('./requester');
-var Actions = require('./Actions');
-var PageStore = require('./stores/PageStore');
-var CommentStore = require('./stores/CommentStore');
-var BotStore = require('./stores/BotStore');
-var Constants = require('./Constants');
+import React          from 'react';
+import requester      from './requester';
+import Actions        from './Actions';
+import Constants      from './constants/Constants';
+import RouteConstants from './constants/RouteConstants';
 // components
-var CommentList = require('./components/CommentList');
-var TimeTabs = require('./components/TimeTabs');
-var AuthorHeader = require('./components/AuthorHeader');
-var AuthorBody = require('./components/AuthorBody');
+import CommentPage    from './components/CommentPage';
+import AuthorPage     from './components/AuthorPage';
+// routing
+import Router         from 'react-router';
+var Route = Router.Route;
+var NotFoundRoute = Router.NotFoundRoute;
+var DefaultRoute = Router.DefaultRoute;
+var Link = Router.Link;
+var RouteHandler = Router.RouteHandler;
 
-var SSComments = React.createClass({
-  getInitialState: function () {
-    return this._getStateObj();
-  },
-
-  render: function () {
-    var internals;
-    if (this.state.selectedBot) {
-      internals = [
-        <AuthorHeader selectedBot={this.state.selectedBot} />,
-        <AuthorBody selectedBot={this.state.selectedBot} botStatus={this.state.botStatus} insights={this.state.insights} />
-      ];
-    } else {
-      internals = [
-        <TimeTabs openTab={this.state.openTab} />,
-        <CommentList comments={this.state.comments} />
-      ];
-    }
+class SSComments extends React.Component {
+  render () {
     return (
       <div className='ss-comments'>
         <h1 className='ss-title'>Subreddit Simulator Top Comments</h1>
-        {internals}
+        <RouteHandler />
       </div>
     );
-  },
+  }
+};
 
-  /** When first in the page, set up change handlers, and kick off initial requests */
-  componentDidMount: function () {
-    // add change listeners for stores
-    CommentStore.addChangeListener(this._onChange);
-    PageStore.addChangeListener(this._onChange);
-    BotStore.addChangeListener(this._onChange);
-    // load initial batch of comments and pre-fetch available bots with insights
-    Actions.loadAllComments();
-    Actions.fetchBotsWithInsights();
-  },
+var routes = (
+  <Route name="app" path="/" handler={SSComments} >
+    <Route name="comments" path="/comments/:range" handler={CommentPage} />
+    <Route name="author" path="/author/:authorid" handler={AuthorPage} />
+    <DefaultRoute handler={CommentPage} />
+  </Route>
+);
 
-  /** When the stores update, re-set our state to trigger a render */
-  _onChange: function () {
-    this.setState(this._getStateObj());
-  },
+Router.run(routes, (Root, state) => {
+  React.render(<Root />, document.body)
+  var params = state.params;
+  if (state.path.indexOf('comments') > -1 || state.path === '/') {
+    switch (params.range) {
+      case RouteConstants.ROUTE_TODAY:
+        Actions.loadTodayComments();
+        break;
 
-  /** The state for the app */
-  _getStateObj: function () {
-    return {
-      comments: CommentStore.getComments(),
-      openTab: PageStore.getOpenTab(),
-      selectedBot: BotStore.getSelectedBot(),
-      botStatus: BotStore.getStatus(),
-      insights: BotStore.getInsights()
+      case RouteConstants.ROUTE_YESTERDAY:
+        Actions.loadYesterdayComments();
+        break;
+
+      case RouteConstants.ROUTE_THIS_WEEK:
+        Actions.loadThisWeekComments();
+        break;
+
+      case RouteConstants.ROUTE_LAST_WEEK:
+        Actions.loadLastWeekComments();
+        break;
+
+      case RouteConstants.ROUTE_THIS_MONTH:
+        Actions.loadThisMonthComments();
+        break;
+
+      case RouteConstants.ROUTE_ALL:
+      default:
+        Actions.loadAllComments();
+        break;
     }
-  },
-
-  /** Clean up handlers when removing... this currently will never happen but might as well be safe */
-  componentWillUnmount: function () {
-    CommentStore.removeChangeListener(this._onChange);
-    PageStore.removeChangeListener(this._onChange);
-    BotStore.removeChangeListener(this._onChange);
+  } else if (state.path.indexOf('author') > -1) {
+    if (params.authorid) {
+      Actions.selectBot(params.authorid);
+    }
   }
 });
-
-// 'https://www.reddit.com/user/' + comment.author + '?sort=top'
-
-React.render(<SSComments />, document.body);

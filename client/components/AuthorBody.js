@@ -1,9 +1,9 @@
-var React = require('react');
-var Constants = require('../Constants');
-var Insights = require('./Insights');
+import React     from 'react';
+import Constants from '../constants/Constants';
+import Insights  from './Insights';
 
-var AuthorBody = React.createClass({
-  render: function () {
+class AuthorBody extends React.Component {
+  render () {
     var internals;
     if (this.props.botStatus === Constants.BOT_STATUS_INSIGHTS_LOADING) {
       internals = <div className='status-message'>insights loading</div>;
@@ -19,6 +19,6 @@ var AuthorBody = React.createClass({
       </div>
     );
   }
-});
+};
 
 module.exports = AuthorBody;

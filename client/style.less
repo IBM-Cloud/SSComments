@@ -17,6 +17,15 @@ h4 { font-size: 1.25em; font-weight: normal;}
 h5 { font-size: 1em;  font-weight: normal;}
 h6 { font-size: 1em;  font-weight: normal;}
 
+a {
+  &:visited, &:link {
+    color: @secondary-text-color;
+  }
+  &:hover, &:active {
+    color: @accent-color;
+  }
+}
+
 // let the real CSS begin
 .ss-comments {
   height: 100%;
@@ -35,6 +44,10 @@ h6 { font-size: 1em;  font-weight: normal;}
     text-indent: 30px;
   }
 
+  .page {
+    flex: 1;
+  }
+
   .time-tabs {
     display: flex;
     padding: 0;
@@ -45,26 +58,18 @@ h6 { font-size: 1em;  font-weight: normal;}
 
     .tab {
       cursor: pointer;
-      color: @secondary-text-color;
-      span {
-        padding: 0 5px;
-      }
-      &:after {
-        content: '';
-        display: block;
-        height: 2px;
-        background-color: @secondary-text-color;
-      }
       &.open, &:hover {
-        color: @accent-color;
-        &:after {
-          background-color: @accent-color;
-        }
+        a {color: @accent-color;}
       }
     }
   }
 
-  .comment-list, .ss-author-deets {
+  .comment-page {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .comment-list, .author-page {
     flex: 1;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
@@ -91,12 +96,7 @@ h6 { font-size: 1em;  font-weight: normal;}
     }
     .comment-author {
       cursor: pointer;
-      &:visited, &:link {
-        color: @secondary-text-color;
-      }
-      &:hover, &:active {
-        color: @accent-color;
-      }
+      text-decoration: none;
     }
     .comment-score {
     }
@@ -106,7 +106,7 @@ h6 { font-size: 1em;  font-weight: normal;}
   }
 
   .ss-author-header {
-    padding: 30px 20% 20px 20%;
+    padding: 30px 0 20px;
     display: flex;
     align-items: baseline;
 
@@ -117,14 +117,6 @@ h6 { font-size: 1em;  font-weight: normal;}
   }
 
   .ss-author-deets {
-    a {
-      &:visited, &:link {
-        color: @secondary-text-color;
-      }
-      &:hover, &:active {
-        color: @accent-color;
-      }
-    }
     .status-message, .insights {
       margin-top: 10px;
     }

@@ -1,7 +1,7 @@
-var React = require('react');
+import React from 'react';
 
-var Insights = React.createClass({
-  render: function () {
+class Insights extends React.Component {
+  render () {
     var tree = this.props.insights.tree;
     var categories = tree.children.map(c => <Category name={c.name} children={c.children} />);
     return (
@@ -10,10 +10,10 @@ var Insights = React.createClass({
       </div>
     );
   }
-});
+};
 
-var Category = React.createClass({
-  render: function () {
+class Category extends React.Component {
+  render () {
     var childData = this.props.children.map(c => this.getChildData(c.name, c.percentage, c.children, 0));
     return (
       <div className='insight-category'>
@@ -21,9 +21,9 @@ var Category = React.createClass({
         {childData}
       </div>
     );
-  },
+  }
 
-  getChildData: function (name, percentage, children, level) {
+  getChildData (name, percentage, children, level) {
     var childData;
     if (children) {
       childData  = children.map(c => this.getChildData(c.name, c.percentage, c.children, level + 1));
@@ -54,6 +54,6 @@ var Category = React.createClass({
       </div>
     );
   }
-});
+};
 
 module.exports = Insights;

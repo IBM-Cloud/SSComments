@@ -1,8 +1,6 @@
 var Dispatcher = require('./Dispatcher');
-var Constants = require('./Constants');
+var Constants = require('./constants/Constants');
 var requester = require('./requester');
-
-var botsWithInsights = [];
 
 var Actions = {
   selectBot: function (bot) {
@@ -68,12 +66,12 @@ var Actions = {
   },
 
   loadInsights: function (bot) {
-    if (botsWithInsights.indexOf(bot) > -1) {
-      Dispatcher.dispatch({ actionType: Constants.INSIGHTS_LOADING });
-      requester.fetchInsights(bot).then(insights => {
-        Dispatcher.dispatch({ actionType: Constants.INSIGHTS_DATA, insights: insights });
-      });
-    }
+    Dispatcher.dispatch({ actionType: Constants.INSIGHTS_LOADING });
+    requester.fetchInsights(bot).then(insights => {
+      Dispatcher.dispatch({ actionType: Constants.INSIGHTS_DATA, insights: insights });
+    }).catch(e => {
+      Dispatcher.dispatch({ actionType: Constants.INSIGHTS_ERROR, error: e });
+    });
   }
 }
 
