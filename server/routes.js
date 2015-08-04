@@ -59,7 +59,7 @@ router.get('/insights', function (req, res) {
 
 /** Get insights for a specific bot */
 router.get('/insightssort', function (req, res) {
-  var insightCategory = req && req.query && req.query.category.replace(' ', '_');
+  var insightCategory = req && req.query && req.query.category.replace(' ', '_').replace('-', '_');
   insightsDB.searchAsync('insights_design', 'sortable', {
     limit: 100,
     q: '*:*',
