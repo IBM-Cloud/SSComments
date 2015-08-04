@@ -57,4 +57,19 @@ router.get('/insights', function (req, res) {
   }
 });
 
+/** Get insights for a specific bot */
+router.get('/insightssort', function (req, res) {
+  var insightCategory = req && req.query && req.query.category.replace(' ', '_');
+  insightsDB.searchAsync('insights_design', 'sortable', {
+    limit: 100,
+    q: '*:*',
+    sort: '"-' + insightCategory + '<number>"'
+  }).then(function (args) {
+    res.json(args[0]);
+  }).catch(function (e) {
+    res.status(502);
+    res.json(e);
+  });
+});
+
 module.exports = router;

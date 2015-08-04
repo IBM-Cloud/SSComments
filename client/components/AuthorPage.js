@@ -1,6 +1,5 @@
 import React        from 'react';
 import AuthorBody   from './AuthorBody';
-import AuthorHeader from './AuthorHeader';
 import BotStore     from '../stores/BotStore';
 import Actions      from '../Actions';
 
@@ -14,7 +13,7 @@ class CommentPage extends React.Component {
   render () {
     return (
       <div className="page author-page">
-        <AuthorHeader selectedBot={this.state.selectedBot} />
+        <h2 className="ss-author-header">{this.state.selectedBot}</h2>
         <AuthorBody selectedBot={this.state.selectedBot} botStatus={this.state.botStatus} insights={this.state.insights} />
       </div>
     );

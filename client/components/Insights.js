@@ -1,4 +1,6 @@
 import React from 'react';
+import Router  from 'react-router';
+var Link = Router.Link;
 
 class Insights extends React.Component {
   render () {
@@ -14,7 +16,7 @@ class Insights extends React.Component {
 
 class Category extends React.Component {
   render () {
-    var childData = this.props.children.map(c => this.getChildData(c.name, c.percentage, c.children, 0));
+    var childData = this.props.children.map(c => this.getChildData(c.name, c.percentage, c.children, c.id, 0));
     return (
       <div className='insight-category'>
         <h3 className='category-name'>{this.props.name}</h3>
@@ -23,10 +25,10 @@ class Category extends React.Component {
     );
   }
 
-  getChildData (name, percentage, children, level) {
+  getChildData (name, percentage, children, id, level) {
     var childData;
     if (children) {
-      childData  = children.map(c => this.getChildData(c.name, c.percentage, c.children, level + 1));
+      childData  = children.map(c => this.getChildData(c.name, c.percentage, c.children, c.id, level + 1));
       if (children.some(c => c.name === name && c.percentage === percentage)) {
         return {childData};
       }
@@ -46,10 +48,10 @@ class Category extends React.Component {
     }
     return (
       <div className='insight-subcategory'>
-        <div className='insight-data'>
+        <Link className='insight-data' to="category" params={{categoryid: id}}>
           {name}
           <div className='data-percentile'>{(percentage * 100).toPrecision(4) + '%'}</div>
-        </div>
+        </Link>
         {childData}
       </div>
     );

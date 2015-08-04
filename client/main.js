@@ -6,6 +6,7 @@ import RouteConstants from './constants/RouteConstants';
 // components
 import CommentPage    from './components/CommentPage';
 import AuthorPage     from './components/AuthorPage';
+import CategoryPage   from './components/CategoryPage';
 // routing
 import Router         from 'react-router';
 var Route = Router.Route;
@@ -17,8 +18,10 @@ var RouteHandler = Router.RouteHandler;
 class SSComments extends React.Component {
   render () {
     return (
-      <div className='ss-comments'>
-        <h1 className='ss-title'>Subreddit Simulator Top Comments</h1>
+      <div className="ss-comments">
+        <Link to="app">
+          <h1 className="ss-title">Subreddit Simulator Top Comments</h1>
+        </Link>
         <RouteHandler />
       </div>
     );
@@ -29,6 +32,7 @@ var routes = (
   <Route name="app" path="/" handler={SSComments} >
     <Route name="comments" path="/comments/:range" handler={CommentPage} />
     <Route name="author" path="/author/:authorid" handler={AuthorPage} />
+    <Route name="category" path="/category/:categoryid" handler={CategoryPage} />
     <DefaultRoute handler={CommentPage} />
   </Route>
 );
@@ -66,6 +70,10 @@ Router.run(routes, (Root, state) => {
   } else if (state.path.indexOf('author') > -1) {
     if (params.authorid) {
       Actions.selectBot(params.authorid);
+    }
+  } else if (state.path.indexOf('category') > -1) {
+    if (params.categoryid) {
+      Actions.loadCategory(params.categoryid);
     }
   }
 });

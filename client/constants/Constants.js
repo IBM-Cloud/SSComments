@@ -13,6 +13,9 @@ module.exports = keyMirror({
   INSIGHTS_LOADING: null,
   INSIGHTS_DATA: null,
   INSIGHTS_ERROR: null,
+  CATEGORY_LOADING: null,
+  CATEGORY_DATA: null,
+  CATEGORY_ERROR: null,
 
   BOT_STATUS_INSIGHTS_LOADING: null,
   BOT_STATUS_NO_INSIGHTS_AVAILABLE: null,

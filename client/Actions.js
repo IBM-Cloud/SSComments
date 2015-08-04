@@ -72,6 +72,15 @@ var Actions = {
     }).catch(e => {
       Dispatcher.dispatch({ actionType: Constants.INSIGHTS_ERROR, error: e });
     });
+  },
+
+  loadCategory: function (category) {
+    Dispatcher.dispatch({ actionType: Constants.CATEGORY_LOADING, category: category });
+    requester.fetchBotsByCategory(category).then(bots => {
+      Dispatcher.dispatch({ actionType: Constants.CATEGORY_DATA, bots: bots });
+    }).catch(e => {
+      Dispatcher.dispatch({ actionType: Constants.CATEGORY_ERROR, error: e });
+    });
   }
 }
 

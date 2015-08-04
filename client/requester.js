@@ -1,4 +1,4 @@
-var request = require('superagent');
+import request from 'superagent';
 
 /* Helper methods for date string formatting */
 function getToday () {
@@ -95,6 +95,21 @@ var requester = {
   fetchInsights: function (bot) {
     return new Promise(function (resolve, reject) {
       request.get('/insights').query({bot: bot}).end(function (err, res) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res.body);
+        }
+      });
+    });
+  },
+
+  /**
+   * Given a category, sort the top 100 bots by their percentile
+   */
+  fetchBotsByCategory: function (category) {
+    return new Promise(function (resolve, reject) {
+      request.get('/insightssort').query({category: category}).end(function (err, res) {
         if (err) {
           reject(err);
         } else {

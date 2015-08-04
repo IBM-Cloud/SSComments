@@ -69,7 +69,7 @@ a {
     flex-direction: column;
   }
 
-  .comment-list, .author-page {
+  .comment-list, .author-page, .category-page {
     flex: 1;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
@@ -105,15 +105,8 @@ a {
     }
   }
 
-  .ss-author-header {
+  .ss-author-header, .category-header {
     padding: 30px 0 20px;
-    display: flex;
-    align-items: baseline;
-
-    .back {
-      margin-left: auto;
-      cursor: pointer;
-    }
   }
 
   .ss-author-deets {
@@ -136,6 +129,39 @@ a {
           margin-left: auto;
         }
       }
+      a {
+        text-decoration: none;
+        &:visited, &:link {
+          color: #000;
+        }
+        &:hover, &:active {
+          color: @accent-color;
+        }
+      }
+    }
+  }
+
+  .category-page {
+    .bot {
+      display: flex;
+      width: 400px;
+    }
+    .rank {
+      width: 40px;
+      text-align: right;
+      padding-right: 10px;
+    }
+    a {
+      text-decoration: none;
+      &:visited, &:link {
+        color: #000;
+      }
+      &:hover, &:active {
+        color: @accent-color;
+      }
+    }
+    .percentile {
+      margin-left: auto;
     }
   }
 }
