@@ -27,36 +27,29 @@ module.exports = {
    * and upload that to the insights database
    */
   getAggregatedTextRunInsightsAndUpload: function () {
-    var rows;
+    var authors;
     // TODO we'll have to change this if there ever are more than 1000
     return commentsDB.viewAsync('ss_design', 'aggregate_text', {reduce: true, group: true, limit: 1000}).then(function (args) {
       var body = args[0];
-      rows = body.rows;
+      authors = body.rows;
       // filter out the bots with less than 2000 words (watson works best when it has more than 2000)
-      // and sort by their total aggregate score
-      rows = rows.filter(function (r) {return r.value.body.split(' ').length > 1200 })
-        .sort(function (r1, r2) {
-          if (r1.value.score < r2.value.score) {
-            return 1;
-          } else if (r1.value.score > r2.value.score) {
-            return -1;
-          } else {
-            return 0;
-          }
-        });
+      authors = authors.filter(function (r) {return r.value.body.split(' ').length > 1200 });
       // now we wanna filter out the insights that we already have data for
       // ...so we gotta find out which ones those are!
-      var authors = rows.map(function (row) { return row.key });
-      return insightsDB.viewAsync('insights_design', 'insights_id_to_rev', {keys: authors});
+      var authorKeys = authors.map(function (row) { return row.key });
+      return insightsDB.viewAsync('insights_design', 'insights_id_to_rev', {keys: authorKeys});
     }).then(function (args) {
       var body = args[0];
-      // build an array of the authors already present in our insights database
-      // and filter them out of the rows that we want to make requests for
-      // TODO: if we're feeling adventerous at a later point and want to update the insights, we'll
-      // have to fetch the revision numbers and update that way
-      var presentAuthors = body.rows.map(function (row) { return row.id });
-      rows = rows.filter(function (r) { return presentAuthors.indexOf(r.key) === -1; });
-      return this.doItForALotOfThings(rows);
+      // build a map if ids to rev numbers for things already present
+      var idToRevMap = {};
+      var rows = body.rows;
+      if (rows.length) {
+        for (var i = 0; i < rows.length; i++) {
+          var row = rows[i];
+          idToRevMap[row.id] = row.value;
+        }
+      }
+      return this.doItForALotOfThings(authors, idToRevMap);
     }.bind(this)).catch(function (e) {
       console.error(e);
     });
@@ -65,7 +58,7 @@ module.exports = {
   /**
    * Given an `aggregatedTextObj`, run the personality insights and upload it to our insights database
    */
-  getInsightsAndUpload: function (aggregatedTextObj) {
+  getInsightsAndUpload: function (aggregatedTextObj, revNum) {
     // for whatever reason promisify didnt work on personalityInsights
     return new Promise(function (resolve, reject) {
       personalityInsights.profile({text: aggregatedTextObj.value.body}, function (err, profile) {
@@ -75,6 +68,9 @@ module.exports = {
           delete profile.processed_lang;
           delete profile.source;
           profile._id = aggregatedTextObj.key;
+          if (revNum) {
+            profile._rev = revNum;
+          }
           insightsDB.insertAsync(profile, {}).then(function () {
             console.log('successfully uploaded insights');
             resolve();
@@ -89,21 +85,21 @@ module.exports = {
   /**
    * Given an array of `aggregatedTextObj`s, run insights and upload 'em
    */
-  doItForALotOfThings: function (aggregatedTextObjs) {
+  doItForALotOfThings: function (aggregatedTextObjs, idToRevMap) {
     return new Promise(function (resolve, reject) {
-      this._doItForALotOfThingsHelper(aggregatedTextObjs, resolve, reject);
+      this._doItForALotOfThingsHelper(aggregatedTextObjs, idToRevMap, resolve, reject);
     }.bind(this));
   },
 
   /**
    * Helper method for Promise recursion
    */
-  _doItForALotOfThingsHelper: function (aggregatedTextObjs, resolve, reject) {
+  _doItForALotOfThingsHelper: function (aggregatedTextObjs, idToRevMap, resolve, reject) {
     console.log('getting insights for ' + aggregatedTextObjs.length + ' more bots');
     if (aggregatedTextObjs.length) {
       var currAuthor = aggregatedTextObjs.shift();
-      this.getInsightsAndUpload(currAuthor).then(function () {
-        this._doItForALotOfThingsHelper(aggregatedTextObjs, resolve, reject);
+      this.getInsightsAndUpload(currAuthor, idToRevMap[currAuthor.key]).then(function () {
+        this._doItForALotOfThingsHelper(aggregatedTextObjs, idToRevMap, resolve, reject);
       }.bind(this)).catch(function (e) {
         reject(e);
       });
