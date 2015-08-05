@@ -14,6 +14,7 @@ class AuthorPage extends React.Component {
     return (
       <div className="page author-page">
         <h2 className="ss-author-header">{this.state.selectedBot}</h2>
+         <a href={"http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/doc/personality-insights/overview.shtml#overview"} target='_blank'>what does any of this mean?</a>
         <AuthorBody selectedBot={this.state.selectedBot} botStatus={this.state.botStatus} insights={this.state.insights} />
       </div>
     );
