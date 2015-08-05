@@ -105,6 +105,21 @@ var requester = {
   },
 
   /**
+   * Load the top 5 bots for each category
+   */
+  fetchAllInsights: function () {
+    return new Promise(function (resolve, reject) {
+      request.get('/allinsights').end(function (err, res) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(res.body);
+        }
+      });
+    })
+  },
+
+  /**
    * Given a category, sort the top 100 bots by their percentile
    */
   fetchBotsByCategory: function (category) {

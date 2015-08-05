@@ -7,6 +7,7 @@ import RouteConstants from './constants/RouteConstants';
 import CommentPage    from './components/CommentPage';
 import AuthorPage     from './components/AuthorPage';
 import CategoryPage   from './components/CategoryPage';
+import InsightsPage   from './components/InsightsPage';
 // routing
 import Router         from 'react-router';
 var Route = Router.Route;
@@ -33,6 +34,7 @@ var routes = (
     <Route name="comments" path="/comments/:range" handler={CommentPage} />
     <Route name="author" path="/author/:authorid" handler={AuthorPage} />
     <Route name="category" path="/category/:categoryid" handler={CategoryPage} />
+    <Route name="insights" handler={InsightsPage} />
     <DefaultRoute handler={CommentPage} />
   </Route>
 );
@@ -75,5 +77,7 @@ Router.run(routes, (Root, state) => {
     if (params.categoryid) {
       Actions.loadCategory(params.categoryid);
     }
+  } else if (state.path.indexOf('insights') > -1) {
+    Actions.loadAllInsights();
   }
 });

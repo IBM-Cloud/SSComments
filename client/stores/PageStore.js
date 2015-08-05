@@ -47,6 +47,10 @@ Dispatcher.register(function(action) {
       PageStore.emitChange();
       break;
 
+    case Constants.TAB_SWITCH_INSIGHTS:
+      setOpenTab('insights')
+      PageStore.emitChange();
+
     default:
       // no op
   }

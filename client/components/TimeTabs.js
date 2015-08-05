@@ -23,6 +23,10 @@ var tabActions = [{
 }, {
   display: 'this month',
   to: RouteConstants.ROUTE_THIS_MONTH
+}, {
+  display: 'insights',
+  to: 'insights',
+  noParams: true
 }];
 
 class Tab extends React.Component {
@@ -30,9 +34,12 @@ class Tab extends React.Component {
     var classes = classNames('tab', {
       open: this.props.open
     });
+    var link = this.props.noParams ?
+      <Link to={this.props.to}>{this.props.display}</Link> :
+      <Link to="comments" params={{range: this.props.to}}>{this.props.display}</Link>;
     return (
       <li className={classes}>
-        <Link to="comments" params={{range: this.props.to}}>{this.props.display}</Link>
+        {link}
       </li>
     );
   }
@@ -41,7 +48,7 @@ class Tab extends React.Component {
 class TimeTabs extends React.Component {
   render () {
     var tabs = tabActions.map(ta =>
-      <Tab display={ta.display} to={ta.to} open={this.props.openTab === ta.display} />
+      <Tab display={ta.display} to={ta.to} noParams={ta.noParams} open={this.props.openTab === ta.display} />
     );
     return <ul className='time-tabs'>{tabs}</ul>;
   }

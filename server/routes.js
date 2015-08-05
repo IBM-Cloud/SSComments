@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var commentsDB = require('./commentsdb');
 var insightsDB = require('./insightsdb');
+var CategoryMap = require('./CategoryToDescriptionMap.json');
+var Promise = require('bluebird');
 
 /* GET home page. */
 router.get('/', function(req, res) {
@@ -60,16 +62,54 @@ router.get('/insights', function (req, res) {
 /** Get insights for a specific bot */
 router.get('/insightssort', function (req, res) {
   var insightCategory = req && req.query && req.query.category.replace(' ', '_').replace('-', '_');
-  insightsDB.searchAsync('insights_design', 'sortable', {
-    limit: 100,
-    q: '*:*',
-    sort: '"-' + insightCategory + '<number>"'
-  }).then(function (args) {
-    res.json(args[0]);
+  loadCategory(insightCategory, 50).then(function (args) {
+    var response = args[0];
+    var insightCategory = req.query.category.replace(' ', '_').replace('-', '_');
+    response.description = CategoryMap[insightCategory];
+    res.json(response);
   }).catch(function (e) {
     res.status(502);
     res.json(e);
   });
 });
+
+// we're not updating the insights regularly, so we're gonna cheat a lil bit.
+// the first time we calculate the response... we're just gonna cache it! The round
+// trip 50+ cloudant queries takes ~1.5s. This way we only have to do it once. NOTE:
+// when we update the insights, we'll need to clear this
+var cheatCache;
+/** Get the top 5 for each category */
+router.get('/allinsights', function (req, res) {
+  if (cheatCache) {
+    res.json(cheatCache);
+  } else {
+    var categories = Object.keys(CategoryMap);
+    var categoryPromises = categories.map(function (c) { return loadCategory(c, 5); });
+    Promise.all(categoryPromises).then(function (args) {
+      var insights = args.map(function (insight, i) {
+        var category = categories[i];
+        insight = insight[0];
+        insight.category = category;
+        insight.description = CategoryMap[category];
+        delete insight.bookmark;
+        delete insight.total_rows;
+        return insight;
+      });
+      cheatCache = insights;
+      res.json(insights);
+    }).catch(function (e) {
+      res.status(502);
+      res.json(e);
+    });
+  }
+});
+
+function loadCategory (category, limit) {
+  return insightsDB.searchAsync('insights_design', 'sortable', {
+    limit: limit,
+    q: '*:*',
+    sort: '"-' + category + '<number>"'
+  })
+}
 
 module.exports = router;

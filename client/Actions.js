@@ -58,6 +58,13 @@ var Actions = {
     });
   },
 
+  loadAllInsights: function () {
+    Dispatcher.dispatch({ actionType: Constants.TAB_SWITCH_INSIGHTS });
+    requester.fetchAllInsights().then(insights => {
+      Dispatcher.dispatch({ actionType: Constants.ALL_INSIGHTS_DATA, insights: insights });
+    });
+  },
+
   fetchBotsWithInsights: function () {
     requester.fetchBotsWithInsights().then(bots => {
       botsWithInsights = bots;

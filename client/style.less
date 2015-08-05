@@ -64,12 +64,12 @@ a {
     }
   }
 
-  .comment-page {
+  .comment-page, .insights-page {
     display: flex;
     flex-direction: column;
   }
 
-  .comment-list, .author-page, .category-page {
+  .comment-list, .author-page, .category-page, .insight-category-list {
     flex: 1;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
@@ -142,23 +142,49 @@ a {
   }
 
   .category-page {
+    .category-description {
+      font-style: italic;
+      padding-bottom: 20px;
+    }
     .bot {
-      display: flex;
       width: 400px;
     }
     .rank {
       width: 40px;
+    }
+  }
+
+  .insight-category-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+
+    h4 {
+      text-decoration: none;
+      color: @accent-color;
+    }
+    h5 {
+      margin-bottom: 10px;
+    }
+
+    .insight-category {
+      width: 270px;
+      margin-bottom: 45px;
+    }
+    .rank {
+      width: 19px;
+    }
+  }
+
+  .bot {
+    display: flex;
+
+    .rank {
       text-align: right;
       padding-right: 10px;
     }
     a {
       text-decoration: none;
-      &:visited, &:link {
-        color: #000;
-      }
-      &:hover, &:active {
-        color: @accent-color;
-      }
     }
     .percentile {
       margin-left: auto;

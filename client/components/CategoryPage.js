@@ -14,6 +14,7 @@ class CategoryPage extends React.Component {
     return (
       <div className="page category-page">
         <h2 className="category-header">{this.state.category}</h2>
+        <div className="category-description">{this.state.description}</div>
         <CategoryBots botsAndPercentages={this.state.botsAndPercentages} isLoading={this.state.isLoading} />
       </div>
     );
@@ -29,7 +30,8 @@ class CategoryPage extends React.Component {
     return {
       botsAndPercentages: CategoryStore.getData(),
       category: CategoryStore.getCurrentCategory(),
-      isLoading: CategoryStore.getLoading()
+      isLoading: CategoryStore.getLoading(),
+      description: CategoryStore.getDescription()
     }
   }
 

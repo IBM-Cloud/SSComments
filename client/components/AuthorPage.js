@@ -1,9 +1,9 @@
 import React        from 'react';
 import AuthorBody   from './AuthorBody';
-import BotStore     from '../stores/BotStore';
+import InsightsStore     from '../stores/InsightsStore';
 import Actions      from '../Actions';
 
-class CommentPage extends React.Component {
+class AuthorPage extends React.Component {
   constructor (props) {
     super(props);
     this.state = this._getStateObj();
@@ -21,22 +21,22 @@ class CommentPage extends React.Component {
 
   /** When first in the page, set up change handlers */
   componentDidMount () {
-    BotStore.addChangeListener(this._onChange);
+    InsightsStore.addChangeListener(this._onChange);
   }
 
   /** The state for this page */
   _getStateObj () {
     return {
-      selectedBot: BotStore.getSelectedBot(),
-      botStatus: BotStore.getStatus(),
-      insights: BotStore.getInsights()
+      selectedBot: InsightsStore.getSelectedBot(),
+      botStatus: InsightsStore.getStatus(),
+      insights: InsightsStore.getInsights()
     }
   }
 
   /** When removing, clean up change handlers */
   componentWillUnmount () {
-    BotStore.removeChangeListener(this._onChange);
+    InsightsStore.removeChangeListener(this._onChange);
   }
 }
 
-module.exports = CommentPage;
+module.exports = AuthorPage;
