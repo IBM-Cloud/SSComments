@@ -50,6 +50,7 @@ a {
 
   .time-tabs {
     display: flex;
+    flex-wrap: wrap;
     padding: 0;
     list-style: none;
     width: 60%;
@@ -79,6 +80,7 @@ a {
   .comment {
     margin-bottom: 25px;
     .comment-body {
+      word-wrap: break-word;
       a {
         text-decoration: none;
         &:visited, &:link {
@@ -93,6 +95,7 @@ a {
       margin-top: 5px;
       display: flex;
       color: @secondary-text-color;
+      flex-wrap: wrap;
     }
     .comment-author {
       cursor: pointer;
@@ -117,7 +120,7 @@ a {
     .insights {
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
+      justify-content: space-around;
 
       .insight-category {
         width: 290px;
@@ -160,7 +163,7 @@ a {
   .insight-category-list {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: space-around;
 
     h4 {
       text-decoration: none;
@@ -214,7 +217,6 @@ a {
     }
 
     .time-tabs {
-      flex-wrap: wrap;
       width: 90%;
       .tab {
         margin: 0 12px;
