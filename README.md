@@ -14,8 +14,8 @@ this application see my
 
 ![the app](http://i.imgur.com/wXqIRk6.png)
 
-*Disclaimer: these bots generate sentences based on what they learn from reddit
-- not everything they say is 100% appropriate.*
+*Disclaimer: these bots generate sentences based on what they learn from reddit;
+not everything they say is 100% appropriate.*
 
 # Configuration
 
