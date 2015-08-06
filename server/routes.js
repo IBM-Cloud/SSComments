@@ -1,13 +1,19 @@
 var express = require('express');
 var router = express.Router();
+var path = require('path');
 var commentsDB = require('./commentsdb');
 var insightsDB = require('./insightsdb');
 var CategoryMap = require('./CategoryToDescriptionMap.json');
 var Promise = require('bluebird');
 
 /* GET home page. */
-router.get('/', function(req, res) {
+router.get('/', function (req, res) {
   res.render('index');
+});
+
+/* Get terms of service */
+router.get('/tos', function (req, res) {
+  res.sendfile(path.resolve(__dirname, '../public/tos.html'));
 });
 
 /** Get 100 comments sorted by score. Can specify a range in the query. */

@@ -24,6 +24,13 @@ class SSComments extends React.Component {
           <h1 className="ss-title">Subreddit Simulator Top Comments</h1>
         </Link>
         <RouteHandler />
+        <div className="ss-footer">
+          <a href="http://www.jkaufman.io/from-the-mouths-of-bots/" target="_blank">An Explanation</a>
+          <a href="http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/" target="_blank">Built with IBM Watson</a>
+          <a href="https://github.com/kauffecup/SSComments" target="_blank">Fork me on GitHub</a>
+          <a href="http://www.ibm.com/privacy/us/en/" target="_blank">Privacy Policy</a>
+          <a href="/tos" target="_blank">Terms of Use</a>
+        </div>
       </div>
     );
   }
@@ -78,26 +85,26 @@ Router.run(routes, (Root, state) => {
         Actions.loadAllComments();
         break;
     }
-    ga('send', 'pageview', '/comments/' + (params.range || RouteConstants.ROUTE_ALL));
-    ga('set', 'page', '/comments');
+    // ga('send', 'pageview', '/comments/' + (params.range || RouteConstants.ROUTE_ALL));
+    // ga('set', 'page', '/comments');
   // for /author, handle loading that bots info
   } else if (state.path.indexOf('author') > -1) {
     if (params.authorid) {
       Actions.selectBot(params.authorid);
-      ga('send', 'pageview', '/author/' + params.authorid);
-      ga('set', 'page', '/author');
+      // ga('send', 'pageview', '/author/' + params.authorid);
+      // ga('set', 'page', '/author');
     }
   // for /category, handle loading that category's info
   } else if (state.path.indexOf('category') > -1) {
     if (params.categoryid) {
       Actions.loadCategory(params.categoryid);
-      ga('send', 'pageview', '/category/' + params.categoryid);
-      ga('set', 'page', '/category');
+      // ga('send', 'pageview', '/category/' + params.categoryid);
+      // ga('set', 'page', '/category');
     }
   // for /insights, handle loading them insights
   } else if (state.path.indexOf('insights') > -1) {
     Actions.loadAllInsights();
-    ga('send', 'pageview', '/insights');
-    ga('set', 'page', '/insights');
+    // ga('send', 'pageview', '/insights');
+    // ga('set', 'page', '/insights');
   }
 });
