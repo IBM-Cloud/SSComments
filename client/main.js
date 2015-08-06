@@ -39,9 +39,18 @@ var routes = (
   </Route>
 );
 
+/**
+ * Perform rendering and actions for different roots
+ * The next version of react-router allows for callbacks to be called on specific
+ * paths... but until then doing things this way is a-ok. Also takes care of google
+ * analytics single-web-page stuffs.
+ */
 Router.run(routes, (Root, state) => {
+  // step 1: render
   React.render(<Root />, document.body)
+  // step 2: handle route actions
   var params = state.params;
+  // for /comments, handle the loading of comments
   if (state.path.indexOf('comments') > -1 || state.path === '/') {
     switch (params.range) {
       case RouteConstants.ROUTE_TODAY:
@@ -69,15 +78,26 @@ Router.run(routes, (Root, state) => {
         Actions.loadAllComments();
         break;
     }
+    ga('send', 'pageview', '/comments/' + (params.range || RouteConstants.ROUTE_ALL));
+    ga('set', 'page', '/comments');
+  // for /author, handle loading that bots info
   } else if (state.path.indexOf('author') > -1) {
     if (params.authorid) {
       Actions.selectBot(params.authorid);
+      ga('send', 'pageview', '/author/' + params.authorid);
+      ga('set', 'page', '/author');
     }
+  // for /category, handle loading that category's info
   } else if (state.path.indexOf('category') > -1) {
     if (params.categoryid) {
       Actions.loadCategory(params.categoryid);
+      ga('send', 'pageview', '/category/' + params.categoryid);
+      ga('set', 'page', '/category');
     }
+  // for /insights, handle loading them insights
   } else if (state.path.indexOf('insights') > -1) {
     Actions.loadAllInsights();
+    ga('send', 'pageview', '/insights');
+    ga('set', 'page', '/insights');
   }
 });
