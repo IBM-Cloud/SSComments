@@ -43,7 +43,7 @@ class SSComments extends React.Component {
         <div className="ss-footer">
           <a href="http://www.jkaufman.io/from-the-mouths-of-bots/" target="_blank">An Explanation</a>
           <a href="http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/" target="_blank">Built with IBM Watson</a>
-          <a href="https://github.com/kauffecup/SSComments" target="_blank">Fork me on GitHub</a>
+          <a href="https://github.com/IBM-Bluemix/SSComments" target="_blank">Fork me on GitHub</a>
           <a href="http://www.ibm.com/privacy/us/en/" target="_blank">Privacy Policy</a>
           <a href="/tos" target="_blank">Terms of Use</a>
         </div>
