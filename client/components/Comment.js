@@ -28,7 +28,7 @@ class Comment extends React.Component {
     return (
       <div className='comment'>
         <h5 className='comment-body'>
-          <a href={linkToComment} target='_blank'>{'"' + comment.body + '"'}</a>
+          <a href={linkToComment} target='_blank'>{'"' + comment.body.replace('fuck', 'f***') + '"'}</a>
         </h5>
         <h6 className='comment-info'>
           <Link className='comment-author' to="author" params={{authorid: comment.author}}>{'- '  + comment.author}</Link>
