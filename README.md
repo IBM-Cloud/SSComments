@@ -56,7 +56,7 @@ In production, we simply
 This builds our minified production bundle with no source maps and serves it. To
 run on Bluemix you simply need to:
 
-    npm run ruild
+    npm run build
     cf push
 
 ### Using IBM Dev Ops
@@ -73,8 +73,8 @@ And my deploy script is only:
 
 # License
 
-This app is licensed under The MIT License. Full license text is available in
-[LICENSE](https://github.com/kauffecup/SSComments/blob/master/LICENSE).
+This app is licensed under the Apache 2.0 License. Full license text is
+available in [LICENSE](https://github.com/kauffecup/SSComments/blob/master/LICENSE).
 
 # Contact Me
 
